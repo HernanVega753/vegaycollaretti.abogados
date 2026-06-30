@@ -171,3 +171,77 @@ const counterObserver = new IntersectionObserver(
 );
 qsa("[data-counter]").forEach((el) => counterObserver.observe(el));
 qs("[data-year]").textContent = new Date().getFullYear();
+
+// ============================
+// WHATSAPP CONTACT
+// ============================
+const whatsappPhone = "5492617670626";
+const whatsappBaseUrl = `https://wa.me/${whatsappPhone}`;
+const whatsappForm = qs("[data-whatsapp-form]");
+
+function setFormNote(message, type = "success") {
+  const note = qs("[data-form-note]", whatsappForm);
+  if (!note) return;
+  note.textContent = message;
+  note.classList.remove("error", "success");
+  note.classList.add(type);
+}
+
+function getFormValue(name) {
+  return whatsappForm.elements[name]?.value.trim() || "";
+}
+
+function buildWhatsappMessage({ nombre, email, telefono, consulta }) {
+  return `Hola, me gustaría realizar una consulta jurídica.
+
+Nombre:
+${nombre}
+
+Correo:
+${email}
+
+Teléfono:
+${telefono}
+
+Consulta:
+
+${consulta}
+
+Muchas gracias.`;
+}
+
+function handleWhatsappFormSubmit(event) {
+  event.preventDefault();
+
+  const formData = {
+    nombre: getFormValue("nombre"),
+    email: getFormValue("email"),
+    telefono: getFormValue("telefono"),
+    consulta: getFormValue("consulta"),
+  };
+
+  const missingFields = [];
+  if (!formData.nombre) missingFields.push("nombre");
+  if (!formData.email) missingFields.push("email");
+  if (!formData.consulta) missingFields.push("consulta");
+
+  if (missingFields.length) {
+    setFormNote(
+      `Por favor, complete los campos obligatorios: ${missingFields.join(", ")}.`,
+      "error",
+    );
+    return;
+  }
+
+  const encodedMessage = encodeURIComponent(buildWhatsappMessage(formData));
+  window.open(`${whatsappBaseUrl}?text=${encodedMessage}`, "_blank", "noopener");
+  whatsappForm.reset();
+  setFormNote(
+    "WhatsApp se abrió correctamente. Si no se abrió automáticamente, revise que tenga instalada la aplicación.",
+    "success",
+  );
+}
+
+if (whatsappForm) {
+  whatsappForm.addEventListener("submit", handleWhatsappFormSubmit);
+}
