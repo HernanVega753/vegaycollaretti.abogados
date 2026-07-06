@@ -177,7 +177,7 @@ qs("[data-year]").textContent = new Date().getFullYear();
 // ============================
 // Reemplace cada valor por el dato correspondiente del panel de EmailJS.
 const EMAILJS_PUBLIC_KEY = "REEMPLAZAR_PUBLIC_KEY"; // Public Key de EmailJS.
-const EMAILJS_SERVICE_ID = "REEMPLAZAR_SERVICE_ID"; // Service ID del servicio conectado.
+const EMAILJS_SERVICE_ID = "service_70uxtia"; // Service ID del servicio conectado.
 const EMAILJS_TEMPLATE_ID = "REEMPLAZAR_TEMPLATE_ID_ESTUDIO"; // Template ID para recibir la consulta en el estudio.
 const EMAILJS_AUTOREPLY_TEMPLATE_ID = "REEMPLAZAR_TEMPLATE_ID_AUTORESPUESTA"; // Template ID para la respuesta automática al consultante.
 const SITE_NAME = "Vega & Collaretti Estudio Jurídico";
