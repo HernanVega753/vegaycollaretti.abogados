@@ -179,7 +179,6 @@ qs("[data-year]").textContent = new Date().getFullYear();
 const EMAILJS_PUBLIC_KEY = "fZc2wGPp3r81WbZjQ"; // Public Key de EmailJS.
 const EMAILJS_SERVICE_ID = "service_70uxtia"; // Service ID del servicio conectado.
 const EMAILJS_TEMPLATE_ID = "REEMPLAZAR_TEMPLATE_ID_ESTUDIO"; // Template ID para recibir la consulta en el estudio.
-const EMAILJS_AUTOREPLY_TEMPLATE_ID = "fZc2wGPp3r81WbZjQ"; // Template ID para la respuesta automática al consultante.
 const SITE_NAME = "Vega & Collaretti Estudio Jurídico";
 const contactForm = qs("[data-contact-form]");
 const submitButton = qs("[data-submit-button]", contactForm || document);
@@ -222,12 +221,6 @@ async function sendContactEmail(templateParams) {
   return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 }
 
-async function sendAutoReply({ nombre, email }) {
-  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_AUTOREPLY_TEMPLATE_ID, {
-    nombre,
-    email,
-  });
-}
 
 function showMessage(message, type = "success") {
   const note = qs("[data-form-note]", contactForm);
@@ -286,14 +279,16 @@ async function handleContactFormSubmit(event) {
       ...formData,
       ...dateTime,
       sitio: SITE_NAME,
+      // En EmailJS, configure el campo "Reply-To Email" con {{reply_to}}
+      // para que al presionar "Responder" en Gmail el destinatario sea el cliente.
+      reply_to: formData.email,
     };
 
     await sendContactEmail(templateParams);
-    await sendAutoReply(formData);
 
     contactForm.reset();
     showMessage(
-      "✓ Su consulta fue enviada correctamente.\nLe responderemos a la mayor brevedad.",
+      "✓ Su consulta fue enviada correctamente.\n\nNos comunicaremos con usted a la mayor brevedad.",
       "success",
     );
   } catch (error) {
