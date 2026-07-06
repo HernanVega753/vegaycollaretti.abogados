@@ -173,44 +173,96 @@ qsa("[data-counter]").forEach((el) => counterObserver.observe(el));
 qs("[data-year]").textContent = new Date().getFullYear();
 
 // ============================
-// WHATSAPP CONTACT
+// EMAILJS CONTACT
 // ============================
-const whatsappPhone = "5492617670626";
-const whatsappBaseUrl = `https://wa.me/${whatsappPhone}`;
-const whatsappForm = qs("[data-whatsapp-form]");
+// Reemplace cada valor por el dato correspondiente del panel de EmailJS.
+const EMAILJS_PUBLIC_KEY = "REEMPLAZAR_PUBLIC_KEY"; // Public Key de EmailJS.
+const EMAILJS_SERVICE_ID = "REEMPLAZAR_SERVICE_ID"; // Service ID del servicio conectado.
+const EMAILJS_TEMPLATE_ID = "REEMPLAZAR_TEMPLATE_ID_ESTUDIO"; // Template ID para recibir la consulta en el estudio.
+const EMAILJS_AUTOREPLY_TEMPLATE_ID = "REEMPLAZAR_TEMPLATE_ID_AUTORESPUESTA"; // Template ID para la respuesta automática al consultante.
+const SITE_NAME = "Vega & Collaretti Estudio Jurídico";
+const contactForm = qs("[data-contact-form]");
+const submitButton = qs("[data-submit-button]", contactForm || document);
+const defaultButtonText = submitButton?.textContent || "Enviar consulta";
+let isEmailJSReady = false;
 
-function setFormNote(message, type = "success") {
-  const note = qs("[data-form-note]", whatsappForm);
+function initEmailJS() {
+  if (!window.emailjs || isEmailJSReady) return isEmailJSReady;
+
+  // EmailJS solo requiere la Public Key en el navegador. No agregue claves privadas aquí.
+  emailjs.init({
+    publicKey: EMAILJS_PUBLIC_KEY,
+  });
+  isEmailJSReady = true;
+  return isEmailJSReady;
+}
+
+function getFormValue(name) {
+  return contactForm?.elements[name]?.value.trim() || "";
+}
+
+function validateForm(formData) {
+  const missingFields = [];
+  if (!formData.nombre) missingFields.push("nombre");
+  if (!formData.email) missingFields.push("email");
+  if (!formData.consulta) missingFields.push("consulta");
+
+  if (missingFields.length) {
+    showMessage(
+      `Por favor, complete los campos obligatorios: ${missingFields.join(", ")}.`,
+      "error",
+    );
+    return false;
+  }
+
+  return true;
+}
+
+async function sendContactEmail(templateParams) {
+  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+}
+
+async function sendAutoReply({ nombre, email }) {
+  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_AUTOREPLY_TEMPLATE_ID, {
+    nombre,
+    email,
+  });
+}
+
+function showMessage(message, type = "success") {
+  const note = qs("[data-form-note]", contactForm);
   if (!note) return;
-  note.textContent = message;
+  note.innerHTML = message.replace(/\n/g, "<br>");
   note.classList.remove("error", "success");
   note.classList.add(type);
 }
 
-function getFormValue(name) {
-  return whatsappForm.elements[name]?.value.trim() || "";
+function resetButton() {
+  if (!submitButton) return;
+  submitButton.disabled = false;
+  submitButton.classList.remove("is-sending");
+  submitButton.textContent = defaultButtonText;
 }
 
-function buildWhatsappMessage({ nombre, email, telefono, consulta }) {
-  return `Hola, me gustaría realizar una consulta jurídica.
-
-Nombre:
-${nombre}
-
-Correo:
-${email}
-
-Teléfono:
-${telefono}
-
-Consulta:
-
-${consulta}
-
-Muchas gracias.`;
+function setSendingButton() {
+  if (!submitButton) return;
+  submitButton.disabled = true;
+  submitButton.classList.add("is-sending");
+  submitButton.textContent = "Enviando...";
 }
 
-function handleWhatsappFormSubmit(event) {
+function getCurrentDateTime() {
+  const now = new Date();
+  return {
+    fecha: now.toLocaleDateString("es-AR"),
+    hora: now.toLocaleTimeString("es-AR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+}
+
+async function handleContactFormSubmit(event) {
   event.preventDefault();
 
   const formData = {
@@ -220,28 +272,42 @@ function handleWhatsappFormSubmit(event) {
     consulta: getFormValue("consulta"),
   };
 
-  const missingFields = [];
-  if (!formData.nombre) missingFields.push("nombre");
-  if (!formData.email) missingFields.push("email");
-  if (!formData.consulta) missingFields.push("consulta");
+  if (!validateForm(formData)) return;
 
-  if (missingFields.length) {
-    setFormNote(
-      `Por favor, complete los campos obligatorios: ${missingFields.join(", ")}.`,
+  try {
+    setSendingButton();
+
+    if (!initEmailJS()) {
+      throw new Error("EmailJS Browser SDK no está disponible.");
+    }
+
+    const dateTime = getCurrentDateTime();
+    const templateParams = {
+      ...formData,
+      ...dateTime,
+      sitio: SITE_NAME,
+    };
+
+    await sendContactEmail(templateParams);
+    await sendAutoReply(formData);
+
+    contactForm.reset();
+    showMessage(
+      "✓ Su consulta fue enviada correctamente.\nLe responderemos a la mayor brevedad.",
+      "success",
+    );
+  } catch (error) {
+    console.error("No fue posible enviar la consulta.", error);
+    showMessage(
+      "No fue posible enviar la consulta.\nIntente nuevamente en unos minutos.",
       "error",
     );
-    return;
+  } finally {
+    resetButton();
   }
-
-  const encodedMessage = encodeURIComponent(buildWhatsappMessage(formData));
-  window.open(`${whatsappBaseUrl}?text=${encodedMessage}`, "_blank", "noopener");
-  whatsappForm.reset();
-  setFormNote(
-    "WhatsApp se abrió correctamente. Si no se abrió automáticamente, revise que tenga instalada la aplicación.",
-    "success",
-  );
 }
 
-if (whatsappForm) {
-  whatsappForm.addEventListener("submit", handleWhatsappFormSubmit);
+if (contactForm) {
+  initEmailJS();
+  contactForm.addEventListener("submit", handleContactFormSubmit);
 }
