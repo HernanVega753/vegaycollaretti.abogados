@@ -178,7 +178,7 @@ qs("[data-year]").textContent = new Date().getFullYear();
 // Reemplace cada valor por el dato correspondiente del panel de EmailJS.
 const EMAILJS_PUBLIC_KEY = "fZc2wGPp3r81WbZjQ"; // Public Key de EmailJS.
 const EMAILJS_SERVICE_ID = "service_70uxtia"; // Service ID del servicio conectado.
-const EMAILJS_TEMPLATE_ID = "REEMPLAZAR_TEMPLATE_ID_ESTUDIO"; // Template ID para recibir la consulta en el estudio.
+const EMAILJS_TEMPLATE_ID = "template_h5x8qpd"; // Template ID para recibir la consulta en el estudio.
 const SITE_NAME = "Vega & Collaretti Estudio Jurídico";
 const contactForm = qs("[data-contact-form]");
 const submitButton = qs("[data-submit-button]", contactForm || document);
@@ -220,7 +220,6 @@ function validateForm(formData) {
 async function sendContactEmail(templateParams) {
   return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 }
-
 
 function showMessage(message, type = "success") {
   const note = qs("[data-form-note]", contactForm);
