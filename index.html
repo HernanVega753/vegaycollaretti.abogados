@@ -249,7 +249,7 @@
           <form
             class="contact-form reveal-right"
             aria-label="Formulario de contacto"
-            data-whatsapp-form
+            data-contact-form
             novalidate
           >
             <label
@@ -275,7 +275,7 @@
                 rows="5"
                 required
               ></textarea></label
-            ><button class="btn btn-blue" type="submit">Enviar consulta</button>
+            ><button class="btn btn-blue" type="submit" data-submit-button>Enviar consulta</button>
             <p class="form-note" data-form-note role="status"></p>
           </form>
           <div class="map-card reveal">
@@ -352,6 +352,7 @@
       </svg>
       <span class="whatsapp-float__text">WhatsApp</span>
     </a>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
     <script src="js/main.js" defer></script>
   </body>
 </html>
